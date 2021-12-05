@@ -1,3 +1,5 @@
+# import pygame
+
 class NotSpriteError(TypeError):
     """Ошибка, в которой говорится о том, что
     спрайт отсутствует"""
@@ -38,19 +40,52 @@ class Player:
     def checking_clolission(self):
         """Проверка со столкновением"""
 
+    def __str__(self):
+        return "P"
+
 
 class Map:
     """Карта, на которой всё размещается"""
 
     def __init__(self):
-        pass
+        self.blocks = list()
+        self.borders = (0, 0)
+
+    def set_borders(self, length: int, weight: int):
+        self.map = [length * [0] for _ in range(weight)]
+        self.borders = (length, weight)
+
+    def set_block(self, block: 'Block', pos: tuple):
+        block.pos = pos
+        self.blocks.append(block)
+        if self.borders:
+            x, y = pos
+            self.map[x][y] = block
+        else:
+            raise IndexError
+
+    def set_enemy(self, enemy: 'Enemy', pos: tuple):
+        enemy.pos = pos
+        if self.borders:
+            x, y = pos
+            self.map[x][y] = enemy
+        else:
+            raise IndexError
+
+    def set_player(self, player: 'Player', pos: tuple):
+        player.pos = pos
+        if self.borders:
+            x, y = pos
+            self.map[x][y] = player
+        else:
+            raise IndexError
 
 
 class Game:
     """Правила игры"""
 
     def __init__(self, *args):
-        None
+        pass
 
     def kill_player(self):
         """Смерть игрока"""
@@ -58,7 +93,7 @@ class Game:
     def win_player(self):
         """Победа игрока"""
 
-    def collision_player(self):
+    def collision_player_enemy(self):
         """Столкновение врага"""
 
     def check_coins(self):
@@ -74,9 +109,24 @@ class Game:
 class Enemy:
     """Враги народа"""
 
-    def __init__(self, sprite=None, pos=(0, 0),
+    def __init__(self, sprite=None,
                  size=(20, 20), speed=10):
         checking_sprite(self, sprite)
-        self.pos = pos
+        self.pos = (0, 0)
         self.speed = speed
         self.size = size
+
+    def collision(self):
+        """Столкновение врага со стеной"""
+
+    def __str__(self):
+        return "E"
+
+
+class Block:
+    def __init__(self, sprite):
+        sprite = checking_sprite(self, sprite)
+        pos = (0, 0)
+
+    def __str__(self):
+        return "B"
