@@ -1,4 +1,6 @@
 # import pygame
+import pygame
+
 
 class NotSpriteError(TypeError):
     """Ошибка, в которой говорится о том, что
@@ -16,6 +18,15 @@ def __doc__():
     """Игровая мини-библиотека или мини-фреймворк,
     созданная из pygame.
     название её: Crazy_ball"""
+
+
+class Ground:
+    def __init__(self):
+        sprite = "aaa"
+        pos = (0, 0)
+
+    def __str__(self):
+        return "G"
 
 
 class Player:
@@ -47,13 +58,12 @@ class Player:
 class Map:
     """Карта, на которой всё размещается"""
 
-    def __init__(self):
+    def __init__(self, length: int, weight: int,
+                 ground: 'Ground'):
         self.blocks = list()
-        self.borders = (0, 0)
-
-    def set_borders(self, length: int, weight: int):
-        self.map = [length * [0] for _ in range(weight)]
-        self.borders = (length, weight)
+        self.enemies = list()
+        self.map = [(length + 1) * [ground] for _ in range(weight + 1)]
+        self.borders = (length + 1, weight + 1)
 
     def set_block(self, block: 'Block', pos: tuple):
         block.pos = pos
@@ -66,6 +76,7 @@ class Map:
 
     def set_enemy(self, enemy: 'Enemy', pos: tuple):
         enemy.pos = pos
+        self.enemies.append(enemy)
         if self.borders:
             x, y = pos
             self.map[x][y] = enemy
@@ -85,7 +96,7 @@ class Game:
     """Правила игры"""
 
     def __init__(self, *args):
-        pass
+        running = "pLaying"
 
     def kill_player(self):
         """Смерть игрока"""
@@ -101,9 +112,17 @@ class Game:
         Есливсе собраны, то игрок выиграл"""
 
     def play(self):
+        pygame.init()
         """Здесь сама игра,
         которая заключена в цикле
         """
+
+        while running == "playing":
+            for event in pygame.event.get():
+                if event == pygame.QUIT:
+                    quit()
+                if event == pygame.MOUSEBUTTONDOWN:
+                    print("Мышка нажата")
 
 
 class Enemy:
