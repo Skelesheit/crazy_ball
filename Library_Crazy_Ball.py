@@ -7,9 +7,9 @@ class NotSpriteError(TypeError):
     спрайт отсутствует"""
 
 
-def checking_sprite(self, sprite):
+def checking_sprite(sprite):
     if sprite:
-        self.sprite = sprite
+        return sprite
     else:
         raise NotSpriteError
 
@@ -22,8 +22,8 @@ def __doc__():
 
 class Ground:
     def __init__(self):
-        sprite = "aaa"
-        pos = (0, 0)
+        self.sprite = "aaa"
+        pos = tuple()
 
     def __str__(self):
         return "G"
@@ -34,13 +34,18 @@ class Player:
         """Сам игрок"""
 
     def __init__(self, sprite=None, size=(30, 30), speed=10):
-        checking_sprite(self, sprite)
+        self.sprite = checking_sprite(sprite)
         self.size = size
         self.speed = speed
         self.coins = 0
+        self.direction_x = -1
+        self.direction_y = -1
 
     def move(self):
         """движение игрока"""
+
+    def draw(self):
+        """Рисование игрока"""
 
     def set_coords(self):
         """Метод для смены координат"""
@@ -62,6 +67,7 @@ class Map:
                  ground: 'Ground'):
         self.blocks = list()
         self.enemies = list()
+        self.coins = list()
         self.map = [(length + 1) * [ground] for _ in range(weight + 1)]
         self.borders = (length + 1, weight + 1)
 
@@ -91,21 +97,27 @@ class Map:
         else:
             raise IndexError
 
+    def set_coin(self, coin: 'Coin', pos: tuple):
+        coin.set_pos(pos)
+        self.coins.append(coin)
+
+    def draw(self):
+        """рисование карты и краёв"""
+
 
 class Game:
-    """Правила игры"""
+    """Правила игры и сама игра"""
 
-    def __init__(self, *args):
-        running = "pLaying"
+    def __init__(self, map: 'Map', player: 'Player'):
+        self.running = "playing"
+        self.map = map
+        self.player = player
 
     def kill_player(self):
         """Смерть игрока"""
 
     def win_player(self):
         """Победа игрока"""
-
-    def collision_player_enemy(self):
-        """Столкновение врага"""
 
     def check_coins(self):
         """
@@ -122,17 +134,15 @@ class Game:
 
         height, width = 700, 550
         screen = pygame.display.set_mode((height, width))
-        running = "playing"
 
-        while running == "playing":
+        while self.running == "playing":
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = "stop_play"
+                    self.running = "stop_play"
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    print("Мышка нажата")
+                    print(event.pos)
                 if event.type == pygame.KEYDOWN:
-                    print("клавиша нажата")
                     if event.key == pygame.K_w:
                         print("w")
                     if event.key == pygame.K_a:
@@ -142,13 +152,20 @@ class Game:
                     if event.key == pygame.K_s:
                         print("s")
 
-        for enemy in Map.enemies:
-            pass
+        self.check_coins()
 
-        """player"""
+        self.map.draw()
 
-        for block in blocks:
-            pass
+        if self.map.enemies:
+            for enemy in self.map.enemies:
+                enemy.collision()
+                enemy.move()
+
+        self.player.collision_player()
+        self.player.move()
+
+        for block in self.map.blocks:
+            block.draw()
 
 
 class Enemy:
@@ -156,13 +173,21 @@ class Enemy:
 
     def __init__(self, sprite=None,
                  size=(20, 20), speed=10):
-        checking_sprite(self, sprite)
+        self.sprite = checking_sprite(sprite)
         self.pos = (0, 0)
         self.speed = speed
         self.size = size
+        self.direction_x = -1
+        self.direction_y = -1
 
     def collision(self):
         """Столкновение врага со стеной"""
+
+    def draw(self):
+        """Рисует врага"""
+
+    def move(self):
+        """Движение врага"""
 
     def __str__(self):
         return "E"
@@ -170,8 +195,25 @@ class Enemy:
 
 class Block:
     def __init__(self, sprite):
-        sprite = checking_sprite(self, sprite)
+        self.sprite = checking_sprite(sprite)
         pos = (0, 0)
 
     def __str__(self):
         return "B"
+
+    def draw(self):
+        """рисует стену"""
+
+
+class Coin:
+    """Монеты"""
+
+    def __init__(self, sprite):
+        self.sprite = checking_sprite(sprite)
+        self.pos = tuple()
+
+    def set_coin(self, pos):
+        self.pos = pos
+
+    def __str__(self):
+        return "C"
