@@ -108,21 +108,47 @@ class Game:
         """Столкновение врага"""
 
     def check_coins(self):
-        """Проверка количества монет.
-        Есливсе собраны, то игрок выиграл"""
-
-    def play(self):
-        pygame.init()
-        """Здесь сама игра,
-        которая заключена в цикле
+        """
+        Проверка количества монет.
+        Если все собраны, то игрок выиграл
         """
 
+    def play(self):
+        """
+            Здесь сама игра,
+            которая заключена в цикле
+        """
+        pygame.init()
+
+        height, width = 700, 550
+        screen = pygame.display.set_mode((height, width))
+        running = "playing"
+
         while running == "playing":
+            pygame.display.flip()
             for event in pygame.event.get():
-                if event == pygame.QUIT:
-                    quit()
-                if event == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.QUIT:
+                    running = "stop_play"
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     print("Мышка нажата")
+                if event.type == pygame.KEYDOWN:
+                    print("клавиша нажата")
+                    if event.key == pygame.K_w:
+                        print("w")
+                    if event.key == pygame.K_a:
+                        print("a")
+                    if event.key == pygame.K_d:
+                        print("d")
+                    if event.key == pygame.K_s:
+                        print("s")
+
+        for enemy in Map.enemies:
+            pass
+
+        """player"""
+
+        for block in blocks:
+            pass
 
 
 class Enemy:
