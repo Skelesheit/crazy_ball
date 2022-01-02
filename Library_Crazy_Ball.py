@@ -1,4 +1,3 @@
-# import pygame
 import pygame
 
 
@@ -29,19 +28,19 @@ class Ground:
         return "G"
 
 
-class Player:
-    def __doc__(self):
-        """Сам игрок"""
+class Player(pygame.sprite):
 
-    def __init__(self, sprite=None, size=(30, 30), speed=10):
+    def __init__(self, sprite: pygame.sprite, size=(30, 30), speed=10):
+        super().__init__()
         self.sprite = checking_sprite(sprite)
+        self.rect = self.image.get_rect()
         self.size = size
         self.speed = speed
         self.coins = 0
         self.direction_x = -1
         self.direction_y = -1
 
-    def move(self):
+    def update(self):
         """движение игрока"""
 
     def draw(self):
@@ -64,14 +63,14 @@ class Map:
     """Карта, на которой всё размещается"""
 
     def __init__(self, length: int, weight: int,
-                 ground: 'Ground'):
+                 ground: Ground):
         self.blocks = list()
         self.enemies = list()
         self.coins = list()
         self.map = [(length + 1) * [ground] for _ in range(weight + 1)]
         self.borders = (length + 1, weight + 1)
 
-    def set_block(self, block: 'Block', pos: tuple):
+    def set_block(self, block: Block, pos: tuple):
         block.pos = pos
         self.blocks.append(block)
         if self.borders:
@@ -80,7 +79,7 @@ class Map:
         else:
             raise IndexError
 
-    def set_enemy(self, enemy: 'Enemy', pos: tuple):
+    def set_enemy(self, enemy: Enemy, pos: tuple):
         enemy.pos = pos
         self.enemies.append(enemy)
         if self.borders:
@@ -89,7 +88,7 @@ class Map:
         else:
             raise IndexError
 
-    def set_player(self, player: 'Player', pos: tuple):
+    def set_player(self, player: Player, pos: tuple):
         player.pos = pos
         if self.borders:
             x, y = pos
@@ -97,7 +96,7 @@ class Map:
         else:
             raise IndexError
 
-    def set_coin(self, coin: 'Coin', pos: tuple):
+    def set_coin(self, coin: Coin, pos: tuple):
         coin.set_pos(pos)
         self.coins.append(coin)
 
@@ -105,13 +104,62 @@ class Map:
         """рисование карты и краёв"""
 
 
+class Enemy(pygame.sprite):
+    """Враги народа"""
+
+    def __init__(self, sprite: pygame.sprite,
+                 size=(20, 20), speed=10, ):
+        self.sprite = sprite
+        self.pos = (0, 0)
+        self.speed = speed
+        self.size = size
+        self.direction_x = -1
+        self.direction_y = -1
+
+    def collision(self):
+        """Столкновение врага со стеной"""
+
+    def draw(self):
+        """Рисует врага"""
+
+    def update(self):
+        """Движение врага"""
+
+    def __str__(self):
+        return "E"
+
+
+class Block(pygame.sprite):
+    def __init__(self, sprite:pygame.sprite):
+        self.sprite = pygame.sprite
+        pos = (0, 0)
+
+    def __str__(self):
+        return "B"
+
+    def draw(self):
+        """рисует стену"""
+
+
+class Coin(pygame.sprite):
+    """Монеты"""
+
+    def __init__(self, sprite:pygame.sprite):
+        self.sprite = pygame.sprite
+        self.pos = tuple()
+
+    def set_coin(self, pos):
+        self.pos = pos
+
+    def __str__(self):
+        return "C"
+
+
 class Game:
     """Правила игры и сама игра"""
 
-    def __init__(self, map: 'Map', player: 'Player'):
+    def __init__(self):
         self.running = "playing"
-        self.map = map
-        self.player = player
 
     def kill_player(self):
         """Смерть игрока"""
@@ -125,7 +173,7 @@ class Game:
         Если все собраны, то игрок выиграл
         """
 
-    def play(self):
+    def play(self, Map: Map, Player: Player):
         """
             Здесь сама игра,
             которая заключена в цикле
@@ -154,66 +202,12 @@ class Game:
 
         self.check_coins()
 
-        self.map.draw()
+        Map.draw()
 
-        if self.map.enemies:
-            for enemy in self.map.enemies:
+        if Map.enemies:
+            for enemy in Map.enemies:
                 enemy.collision()
                 enemy.move()
 
-        self.player.collision_player()
-        self.player.move()
-
-        for block in self.map.blocks:
-            block.draw()
-
-
-class Enemy:
-    """Враги народа"""
-
-    def __init__(self, sprite=None,
-                 size=(20, 20), speed=10):
-        self.sprite = checking_sprite(sprite)
-        self.pos = (0, 0)
-        self.speed = speed
-        self.size = size
-        self.direction_x = -1
-        self.direction_y = -1
-
-    def collision(self):
-        """Столкновение врага со стеной"""
-
-    def draw(self):
-        """Рисует врага"""
-
-    def move(self):
-        """Движение врага"""
-
-    def __str__(self):
-        return "E"
-
-
-class Block:
-    def __init__(self, sprite):
-        self.sprite = checking_sprite(sprite)
-        pos = (0, 0)
-
-    def __str__(self):
-        return "B"
-
-    def draw(self):
-        """рисует стену"""
-
-
-class Coin:
-    """Монеты"""
-
-    def __init__(self, sprite):
-        self.sprite = checking_sprite(sprite)
-        self.pos = tuple()
-
-    def set_coin(self, pos):
-        self.pos = pos
-
-    def __str__(self):
-        return "C"
+        Player.collision_player()
+        Player.move()
