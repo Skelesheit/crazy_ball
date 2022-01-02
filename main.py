@@ -1,18 +1,22 @@
-import Library_Crazy_Ball
-
 import pygame
+import Library_Crazy_Ball
+from Library_Crazy_Ball import *
+from copy import copy
+pygame.init()
 
-"""sprite = pygame.surface([100, 100])
-image = pygame.image.load("Player.jpg")
-image.set_colorkey(-1)"""
+size = a, b = 1200, 800
+screen = pygame.display.set_mode(size)
 
-Player = Library_Crazy_Ball.Player("aaa", (30, 30), 10)
-Enemy = Library_Crazy_Ball.Enemy("aaa", (30, 30), 10)
-Ground = Library_Crazy_Ball.Ground()
-Map = Library_Crazy_Ball.Map(8, 8, "ground")
+Ground = Ground("ground.jpg")
+Map = Map(15, 20, Ground)
+Player = Player("ball_owl.png", speed=1)
 Map.set_player(Player, (5, 5))
-Map.set_enemy(Enemy, (6, 6))
+Block = Block("block.png", (1, 1))
+Block2 = copy(Block)
+Map.set_block(Block, (1, 1))
+Map.set_block(Block2, (3, 3))
+
 
 Game1 = Library_Crazy_Ball.Game()
 
-Game1.play(Map, Player)
+Game1.play(Map, Player, screen)
