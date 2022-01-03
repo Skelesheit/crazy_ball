@@ -70,7 +70,7 @@ class Player(pygame.sprite.Sprite):
                 Map.coins.pop(i)
                 break
 
-        if self.rect.y < (len(Map.map[0])) * 50 - 50 and self.direction_y == 1:
+        if self.rect.y < (len(Map.map[0])) * 50 and self.direction_y == 1:
             self.rect.y += self.direction_y * self.speed
         if self.rect.y >= 50 and self.direction_y == -1:
             self.rect.y += self.direction_y * self.speed
