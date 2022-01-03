@@ -34,7 +34,6 @@ class Ground(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect()
         self.sprite = sprite
-        pos = tuple()
 
     def __str__(self):
         return "G"
@@ -45,7 +44,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, sprite: str, size=(30, 30), speed=10):
         super().__init__()
         self.image = load_image(sprite).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (30, 30))
+        self.image = pygame.transform.scale(self.image, (40, 40))
         self.rect = self.image.get_rect(center=(200, 300))
         self.radius = self.rect.width // 2
         self.pos = 0, 0
@@ -55,12 +54,19 @@ class Player(pygame.sprite.Sprite):
         self.direction_y = -1
 
     def update(self, Map):
+
         for block in Map.blocks:
             if self.rect.colliderect(block.rect):
-                print(self.rect, block.rect)
-                if self.rect.y + 5 > block.rect.y and self.direction_y == 1:
-                    self.direction_y = 0
-                    print(self.rect, block.rect)
+                if self.direction_y == 0:
+                    self.direction_x = -self.direction_x
+                else:
+                    self.direction_y = -self.direction_y
+                break
+
+        for i in range(len(Map.coins)):
+            if self.rect.colliderect(Map.coins[i]):
+                Map.coins.pop(i)
+                break
 
         if self.rect.y < (len(Map.map[0]) - 2) * 50 - 50 and self.direction_y == 1:
             self.rect.y += self.direction_y * self.speed
@@ -71,18 +77,6 @@ class Player(pygame.sprite.Sprite):
             self.rect.x += self.direction_x * self.speed
         if self.rect.x >= 50 and self.direction_x == -1:
             self.rect.x += self.direction_x * self.speed
-
-    def draw(self):
-        """Рисование игрока"""
-
-    def set_coords(self):
-        """Метод для смены координат"""
-
-    def collision_player(self):
-        """Столкновение игрока"""
-
-    def checking_clolission(self):
-        """Проверка со столкновением"""
 
     def __str__(self):
         return "P"
@@ -104,9 +98,6 @@ class Enemy(pygame.sprite.Sprite):
     def collision(self):
         """Столкновение врага со стеной"""
 
-    def draw(self):
-        """Рисует врага"""
-
     def update(self):
         """"""
 
@@ -119,7 +110,7 @@ class Block(pygame.sprite.Sprite):
         super(Block, self).__init__()
         self.image = pygame.image.load(sprite)
         self.image = pygame.transform.scale(self.image, (50, 50))
-        self.rect = self.image.get_rect(center=(pos[0] * 50 + 50, pos[-1] * 50 + 50))
+        self.rect = pygame.Rect(pos[-1] * 50 + 50, pos[0] * 50 + 50, 50, 50)
         self.pos = pos
 
     def __str__(self):
@@ -132,10 +123,12 @@ class Block(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     """Монеты"""
 
-    def __init__(self, sprite: str):
+    def __init__(self, sprite: str, pos: tuple):
         super(Coin, self).__init__()
-        self.sprite = sprite
-        self.pos = tuple()
+        self.image = pygame.image.load(sprite).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.rect = pygame.Rect(pos[-1] * 50 + 50, pos[0] * 50 + 50, 50, 50)
+        self.pos = pos
 
     def __str__(self):
         return "C"
@@ -153,14 +146,11 @@ class Map:
         self.borders = (length + 1, weight + 1)
         self.ground = ground
 
-    def set_block(self, block: Block, pos=None):
-        if pos:
-            x, y = pos
-
-        else:
-            x, y = block.pos
+    def set_block(self, namefile: str, pos: tuple):
+        x, y = pos
+        block = Block(namefile, (x, y))
         self.blocks.append(block)
-        self.map[x][y] = block
+        self.map[y][x] = block
 
     def set_enemy(self, enemy: Enemy, pos: tuple):
         enemy.pos = pos
@@ -169,9 +159,9 @@ class Map:
     def set_player(self, player: Player, pos: tuple):
         player.pos = pos
 
-    def set_coin(self, coin: Coin, pos: tuple):
+    def set_coin(self, namefile: str, pos: tuple):
         x, y = pos
-        coin.pos = pos
+        coin = Coin(namefile, (x, y))
         self.coins.append(coin)
 
     def draw(self):
@@ -209,7 +199,12 @@ class Game:
             pygame.display.update()
             for line in range(len(Map.map)):
                 for el in range(len(Map.map[line])):
-                    screen.blit(Map.map[line][el].image, (50 + line * 50, 50 + el * 50))
+                    if type(Map.map[line][el]) == Block:
+                        screen.blit(Map.map[line][el].image, Map.map[line][el].rect)
+                    else:
+                        screen.blit(Map.map[line][el].image, (50 + line * 50, 50 + el * 50))
+            for coin in Map.coins:
+                screen.blit(coin.image, coin.rect)
 
             Player.update(Map)
             screen.blit(Player.image, Player.rect)
@@ -240,5 +235,10 @@ class Game:
                     enemy.collision()
                     enemy.move()
 
-            Player.collision_player()
+            if len(Map.coins) == 0:
+                self.running = "win_game"
+
             clock.tick(FPS)
+
+        if self.running:
+            print("Вы выиграли")
