@@ -102,24 +102,46 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
         self.direction_x = 1
         self.direction_y = 1
-        self.speed_x = random.randint(1, speed)
-        self.speed_y = abs(speed - self.speed_x)
+        self.speed_x = 0
+        self.speed_y = 0
+        self.set_speed()
 
     def update(self, Map):
-        if self.rect.y < (len(Map.map[0])) * 50 - 50 and self.direction_y == 1:
-            self.rect.y += self.direction_y * self.speed_y
-        if self.rect.y >= 50 and self.direction_y == -1:
-            self.rect.y += self.direction_y * self.speed_ys
+        for block in Map.blocks:
+            if self.rect.colliderect(block.rect):
+                self.set_speed()
+                self.direction_y = - self.direction_y
+                self.direction_x = - self.direction_x
+                break
 
-        if self.rect.x < (len(Map.map)) * 50 and self.direction_x == 1:
-            self.rect.x += self.direction_x * self.speed_x
-        if self.rect.x >= 50 and self.direction_x == -1:
-            self.rect.x += self.direction_x * self.speed_x
+
+        if self.rect.y >= (len(Map.map[0])) * 50 - 50:
+            self.set_speed()
+            self.direction_y = -1
+
+        if self.rect.y <= 60:
+            self.set_speed()
+            self.direction_y = 1
+
+        if self.rect.x >= (len(Map.map)) * 50 - 10:
+            self.set_speed()
+            self.direction_x = -1
+        if self.rect.x <= 60:
+            self.set_speed()
+            self.direction_x = 1
+
+        self.rect.x += self.direction_x * self.speed_x
+        self.rect.y += self.direction_y * self.speed_y
 
     def set_pos(self, pos: tuple):
         x, y = pos
         self.rect.x = x * 50
         self.rect.y = y * 50
+
+    def set_speed(self):
+        """Создаёт рандомное направление для врага"""
+        self.speed_x = random.randint(1, self.speed)
+        self.speed_y = abs(self.speed - self.speed_x)
 
     def __str__(self):
         return "E"
@@ -206,7 +228,7 @@ class Game:
         Если все собраны, то игрок выиграл
         """
 
-    def play(self, Map: Map, Player: Player, screen: pygame.Surface):
+    def play(self, Map: Map, Player: Player, screen: pygame.Surface) -> str:
         """
             Здесь сама игра,
             которая заключена в цикле
@@ -259,12 +281,8 @@ class Game:
             self.check_coins()
 
             if len(Map.coins) == 0:
-                self.running = "win_game"
+                self.running = "win game"
 
             clock.tick(FPS)
 
-        if self.running == "game over":
-            print("Вы проиграли")
-
-        if self.running == "win_game":
-            print("Вы выиграли")
+        return self.running
