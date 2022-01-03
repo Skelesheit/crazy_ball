@@ -1,4 +1,5 @@
 import pygame
+import random
 
 
 class NotSpriteError(TypeError):
@@ -40,8 +41,9 @@ class Ground(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
+    """Игрок, которым можно управлять"""
 
-    def __init__(self, sprite: str, size=(30, 30), speed=10):
+    def __init__(self, sprite: str, speed=10):
         super().__init__()
         self.image = load_image(sprite).convert_alpha()
         self.image = pygame.transform.scale(self.image, (40, 40))
@@ -68,15 +70,20 @@ class Player(pygame.sprite.Sprite):
                 Map.coins.pop(i)
                 break
 
-        if self.rect.y < (len(Map.map[0]) - 2) * 50 - 50 and self.direction_y == 1:
+        if self.rect.y < (len(Map.map[0])) * 50 - 50 and self.direction_y == 1:
             self.rect.y += self.direction_y * self.speed
         if self.rect.y >= 50 and self.direction_y == -1:
             self.rect.y += self.direction_y * self.speed
 
-        if self.rect.x < (len(Map.map) - 3) * 50 - 50 and self.direction_x == 1:
+        if self.rect.x < (len(Map.map)) * 50 and self.direction_x == 1:
             self.rect.x += self.direction_x * self.speed
         if self.rect.x >= 50 and self.direction_x == -1:
             self.rect.x += self.direction_x * self.speed
+
+    def set_pos(self, pos: tuple):
+        x, y = pos
+        self.rect.x = x * 50
+        self.rect.y = y * 50
 
     def __str__(self):
         return "P"
@@ -86,26 +93,41 @@ class Enemy(pygame.sprite.Sprite):
     """Враги народа"""
 
     def __init__(self, sprite: str,
-                 size=(20, 20), speed=1):
+                 speed=5):
         super().__init__()
-        self.sprite = sprite
-        self.pos = (0, 0)
+        self.image = load_image(sprite).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (40, 40))
+        self.rect = self.image.get_rect(center=(200, 300))
+        self.radius = self.rect.width // 2
         self.speed = speed
-        self.size = size
-        self.direction_x = 0
-        self.direction_y = 0
+        self.direction_x = 1
+        self.direction_y = 1
+        self.speed_x = random.randint(1, speed)
+        self.speed_y = abs(speed - self.speed_x)
 
-    def collision(self):
-        """Столкновение врага со стеной"""
+    def update(self, Map):
+        if self.rect.y < (len(Map.map[0])) * 50 - 50 and self.direction_y == 1:
+            self.rect.y += self.direction_y * self.speed_y
+        if self.rect.y >= 50 and self.direction_y == -1:
+            self.rect.y += self.direction_y * self.speed_ys
 
-    def update(self):
-        """"""
+        if self.rect.x < (len(Map.map)) * 50 and self.direction_x == 1:
+            self.rect.x += self.direction_x * self.speed_x
+        if self.rect.x >= 50 and self.direction_x == -1:
+            self.rect.x += self.direction_x * self.speed_x
+
+    def set_pos(self, pos: tuple):
+        x, y = pos
+        self.rect.x = x * 50
+        self.rect.y = y * 50
 
     def __str__(self):
         return "E"
 
 
 class Block(pygame.sprite.Sprite):
+    """Стены, через которые игрок не может пройти"""
+
     def __init__(self, sprite: str, pos: tuple):
         super(Block, self).__init__()
         self.image = pygame.image.load(sprite)
@@ -115,9 +137,6 @@ class Block(pygame.sprite.Sprite):
 
     def __str__(self):
         return "B"
-
-    def draw(self):
-        """рисует стену"""
 
 
 class Coin(pygame.sprite.Sprite):
@@ -152,12 +171,13 @@ class Map:
         self.blocks.append(block)
         self.map[y][x] = block
 
-    def set_enemy(self, enemy: Enemy, pos: tuple):
-        enemy.pos = pos
+    def set_enemy(self, filename: str, pos: tuple, speed=1):
+        enemy = Enemy(filename, speed)
+        enemy.set_pos(pos)
         self.enemies.append(enemy)
 
     def set_player(self, player: Player, pos: tuple):
-        player.pos = pos
+        player.set_pos(pos)
 
     def set_coin(self, namefile: str, pos: tuple):
         x, y = pos
@@ -206,8 +226,16 @@ class Game:
             for coin in Map.coins:
                 screen.blit(coin.image, coin.rect)
 
+            for enemy in Map.enemies:
+                enemy.update(Map)
+                screen.blit(enemy.image, enemy.rect)
+
             Player.update(Map)
             screen.blit(Player.image, Player.rect)
+
+            for enemy in Map.enemies:
+                if Player.rect.colliderect(enemy):
+                    self.running = "game over"
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -230,15 +258,13 @@ class Game:
 
             self.check_coins()
 
-            if Map.enemies:
-                for enemy in Map.enemies:
-                    enemy.collision()
-                    enemy.move()
-
             if len(Map.coins) == 0:
                 self.running = "win_game"
 
             clock.tick(FPS)
 
-        if self.running:
+        if self.running == "game over":
+            print("Вы проиграли")
+
+        if self.running == "win_game":
             print("Вы выиграли")
