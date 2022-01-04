@@ -2,7 +2,7 @@ def load_level():
     from Library_Crazy_Ball import Player, Ground, Map, Game
     import pygame
     pygame.init()
-    size = a, b = 1800, 1000
+    size = 1800, 1000
     screen = pygame.display.set_mode(size)
     Ground = Ground("ground.jpg")
     Map = Map(10, 10, Ground)
@@ -26,6 +26,6 @@ def load_level():
     Map.set_coin("coin.png", (10, 5))
     Game1 = Game()
     win = Game1.play(Map, Player, screen)
-    print(win)
+    return win
 
 

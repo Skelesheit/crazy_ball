@@ -3,7 +3,7 @@ def generate_random_level():
     import random
     import pygame
     pygame.init()
-    size = a, b = 1800, 1000
+    size = 1800, 1000
     screen = pygame.display.set_mode(size)
     Ground = Ground("ground.jpg")
     Map = Map(15, 20, Ground)
@@ -20,8 +20,5 @@ def generate_random_level():
         Map.set_enemy("ball_tiger.png", (x, y), 7)
     Game1 = Game()
     mod = Game1.play(Map, Player, screen)
-    if mod == "win game":
-        print("you win")
-    elif mod == "game over":
-        print(mod)
+    return mod
 

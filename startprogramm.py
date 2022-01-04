@@ -1,10 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtGui import QFont
 from StartGameDesign import Ui_Form
-from main import generate_random_level
-import levels.level_1, levels.level_2, levels.level_3, \
-    levels.level_4, levels.level_5, levels.level_6, \
-    levels.level_7, levels.level_8, levels.level_9, levels.level_10
+from random_level import generate_random_level
+import levels.level_1, levels.level_2, levels.level_3, levels.level_4, levels.level_5, levels.level_6, levels.level_7
+import levels.level_8, levels.level_9, levels.level_10
 
 
 class GameWindow(QWidget, Ui_Form):
@@ -14,6 +14,11 @@ class GameWindow(QWidget, Ui_Form):
         self.initUI()
 
     def initUI(self):
+        self.condition = QLabel(self)
+        self.condition.setGeometry(700, 300, 100, 40)
+        self.condition.setStyleSheet("color :rgb(16,255,1)")
+        self.condition.setFont(QFont("Sans", 15))
+        self.condition.setText("Hello!")
         self.setWindowTitle("Crazy ball")
         self.pushButton_12.clicked.connect(self.random_level)
         self.pushButton_11.clicked.connect(self.finish)
@@ -23,31 +28,30 @@ class GameWindow(QWidget, Ui_Form):
             btn.clicked.connect(self.load_level)
 
     def random_level(self):
-        generate_random_level()
+        self.condition.setText(generate_random_level())
 
     def load_level(self):
         req = self.sender()
         if req == self.pushButton:
-            print("Загрузка уровня 1")
-            levels.level_1.load_level()
+            self.condition.setText(levels.level_1.load_level())
         if req == self.pushButton_2:
-            print("Загрузка уровня 2")
+            self.condition.setText(levels.level_2.load_level())
         if req == self.pushButton_3:
-            print("Загрузка уровня 3")
+            self.condition.setText(levels.level_3.load_level())
         if req == self.pushButton_4:
-            print("Загрузка уровня 4")
+            self.condition.setText(levels.level_4.load_level())
         if req == self.pushButton_5:
-            print("Загрузка уровня 5")
+            self.condition.setText(levels.level_5.load_level())
         if req == self.pushButton_6:
-            print("Загрузка уровня 7")
+            self.condition.setText(levels.level_6.load_level())
         if req == self.pushButton_7:
-            print("Загрузка уровня 8")
+            self.condition.setText(levels.level_7.load_level())
         if req == self.pushButton_8:
-            print("Загрузка уровня 9")
+            self.condition.setText(levels.level_8.load_level())
         if req == self.pushButton_9:
-            print("Загрузка уровня 10")
+            self.condition.setText(levels.level_9.load_level())
         if req == self.pushButton_10:
-            print("Загрузка уровня 2")
+            self.condition.setText(levels.level_10.load_level())
 
     def finish(self):
         exit()

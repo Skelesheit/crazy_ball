@@ -72,12 +72,12 @@ class Player(pygame.sprite.Sprite):
 
         if self.rect.y < (len(Map.map[0])) * 50 and self.direction_y == 1:
             self.rect.y += self.direction_y * self.speed
-        if self.rect.y >= 50 and self.direction_y == -1:
+        if self.rect.y >= 60 and self.direction_y == -1:
             self.rect.y += self.direction_y * self.speed
 
         if self.rect.x < (len(Map.map)) * 50 and self.direction_x == 1:
             self.rect.x += self.direction_x * self.speed
-        if self.rect.x >= 50 and self.direction_x == -1:
+        if self.rect.x >= 60 and self.direction_x == -1:
             self.rect.x += self.direction_x * self.speed
 
     def set_pos(self, pos: tuple):
@@ -185,9 +185,9 @@ class Map:
         self.borders = (length + 1, weight + 1)
         self.ground = ground
 
-    def set_block(self, namefile: str, pos: tuple):
+    def set_block(self, filename: str, pos: tuple):
         x, y = pos
-        block = Block(namefile, (x, y))
+        block = Block(filename, (x, y))
         self.blocks.append(block)
         self.map[y][x] = block
 
@@ -199,9 +199,9 @@ class Map:
     def set_player(self, player: Player, pos: tuple):
         player.set_pos(pos)
 
-    def set_coin(self, namefile: str, pos: tuple):
+    def set_coin(self, filename: str, pos: tuple):
         x, y = pos
-        coin = Coin(namefile, (x, y))
+        coin = Coin(filename, (x, y))
         self.coins.append(coin)
 
     def __getitem__(self, pos):
@@ -233,7 +233,7 @@ class Game:
         """
 
         if len(Map.coins) == 0:
-            self.running = "win game"
+            self.running = "you win!"
 
     def check_kill(self, Map: Map, Player: Player):
         """
@@ -276,7 +276,7 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = "stop_play"
+                    self.running = "you exit"
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     print(event.pos)
                 if event.type == pygame.KEYDOWN:
