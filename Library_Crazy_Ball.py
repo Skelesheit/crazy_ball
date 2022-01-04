@@ -297,4 +297,6 @@ class Game:
 
             clock.tick(self.FPS)
 
+        pygame.display.quit()
+
         return self.running
