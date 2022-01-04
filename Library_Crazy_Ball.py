@@ -109,11 +109,9 @@ class Enemy(pygame.sprite.Sprite):
     def update(self, Map):
         for block in Map.blocks:
             if self.rect.colliderect(block.rect):
-                self.set_speed()
                 self.direction_y = - self.direction_y
                 self.direction_x = - self.direction_x
                 break
-
 
         if self.rect.y >= (len(Map.map[0])) * 50 - 50:
             self.set_speed()
@@ -206,27 +204,46 @@ class Map:
         coin = Coin(namefile, (x, y))
         self.coins.append(coin)
 
-    def draw(self):
-        """рисование карты и краёв"""
+    def __getitem__(self, pos):
+        if type(pos) == tuple:
+            y, x = pos
+            return self.map[y][x]
+        else:
+            return self.map[pos]
+
+    def __setitem__(self, pos: tuple):
+        y, x = pos
+        return self.map[y][x]
+
+    def __len__(self):
+        return len(self.map)
 
 
 class Game:
     """Правила игры и сама игра"""
 
-    def __init__(self):
+    def __init__(self, fps=60):
         self.running = "playing"
+        self.FPS = fps
 
-    def kill_player(self):
-        """Смерть игрока"""
-
-    def win_player(self):
-        """Победа игрока"""
-
-    def check_coins(self):
+    def check_coins(self, Map: Map):
         """
-        Проверка количества монет.
-        Если все собраны, то игрок выиграл
+            Проверка на количество монет на карте,
+            если их не осталось, Игрок победил.
         """
+
+        if len(Map.coins) == 0:
+            self.running = "win game"
+
+    def check_kill(self, Map: Map, Player: Player):
+        """
+            Проверка на столкновение c врагом.
+            Если коснулся врага, то смерть
+        """
+        for enemy in Map.enemies:
+            if Player.rect.colliderect(enemy):
+                self.running = "game over"
+                return
 
     def play(self, Map: Map, Player: Player, screen: pygame.Surface) -> str:
         """
@@ -235,16 +252,16 @@ class Game:
         """
 
         clock = pygame.time.Clock()
-        FPS = 60
+
         while self.running == "playing":
             pygame.display.flip()
             pygame.display.update()
-            for line in range(len(Map.map)):
-                for el in range(len(Map.map[line])):
-                    if type(Map.map[line][el]) == Block:
-                        screen.blit(Map.map[line][el].image, Map.map[line][el].rect)
+            for line in range(len(Map)):
+                for el in range(len(Map[line])):
+                    if type(Map[line, el]) == Block:
+                        screen.blit(Map[line, el].image, Map[line, el].rect)
                     else:
-                        screen.blit(Map.map[line][el].image, (50 + line * 50, 50 + el * 50))
+                        screen.blit(Map[line, el].image, (50 + line * 50, 50 + el * 50))
             for coin in Map.coins:
                 screen.blit(coin.image, coin.rect)
 
@@ -255,9 +272,7 @@ class Game:
             Player.update(Map)
             screen.blit(Player.image, Player.rect)
 
-            for enemy in Map.enemies:
-                if Player.rect.colliderect(enemy):
-                    self.running = "game over"
+            self.check_kill(Map, Player)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -278,11 +293,8 @@ class Game:
                         Player.direction_y = 1
                         Player.direction_x = 0
 
-            self.check_coins()
+            self.check_coins(Map)
 
-            if len(Map.coins) == 0:
-                self.running = "win game"
-
-            clock.tick(FPS)
+            clock.tick(self.FPS)
 
         return self.running
